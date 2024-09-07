@@ -1,25 +1,37 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useEffect } from 'react';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+import { useDispatch, useSelector } from 'react-redux';
+import { fetchLanes } from './redux/swimlaneSlice';
+import Swimlane from './components/Swimlane';
+import Filter from './components/Filter';
 
-function App() {
+const App = () => {
+  const dispatch = useDispatch();
+  const { lanes, status } = useSelector((state) => state.swimlane);
+
+  useEffect(() => {
+    if (status === 'idle') {
+      dispatch(fetchLanes());
+    }
+  }, [dispatch, status]);
+  
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <DndProvider backend={HTML5Backend}>
+      <div className="App p-4 flex flex-col min-h-screen">
+        <Filter />
+        <div className="flex-grow flex">
+          {status === 'loading' ? (
+            <p>Loading...</p>
+          ) : status === 'failed' ? (
+            <p>Error loading lanes</p>
+          ) : (
+            <Swimlane lanes={lanes} />
+          )}
+        </div>
+      </div>
+    </DndProvider>
   );
-}
+};
 
 export default App;
